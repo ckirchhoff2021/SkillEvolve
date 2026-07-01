@@ -32,7 +32,9 @@ wheels/
 
 # Data
 datas/*
+!datas/.gitkeep
 outputs/*
+!outputs/.gitkeep
 assets/*
 !assets/.gitkeep
 
