@@ -1,10 +1,11 @@
 """
-Trainer - 主训练循环
-基于 SkillOpt ReflACT 六阶段流水线:
+Trainer - main training loop
   Rollout → Reflect → Aggregate → Select → Update → Evaluate
 
-每个 epoch 对训练集进行 step 级优化，每 step 执行完整六阶段流水线
+Each epoch, step-level optimization is performed on the training set,
+executing the full six-stage pipeline for each step.
 """
+
 import os
 import json
 import hashlib
@@ -130,6 +131,7 @@ class SkillTrainer:
                 
                 # [1/6] Rollout
                 print("  [1/6] Rollout: 在训练集上推理...")
+                # train_results = self.rollout.rollout_step(self.current_skill, step, self.max_steps_per_epoch)
                 train_results = self.rollout.rollout_train(self.current_skill)
                 train_hard, train_soft = simple_score(train_results)
                 print(f"    训练集精度: hard={train_hard:.4f}, soft={train_soft:.4f}")

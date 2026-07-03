@@ -75,22 +75,8 @@ def rewrite_skill(
         for e in ranked_patch
     ])
     
-    prompt = f"""你是视觉问答技能优化专家。请根据以下编辑意图，重新编写完整的技能文档。
-
-## 当前技能文档
-{current_skill}
-
-## 编辑意图
-{edits_text}
-
-## 任务要求
-1. 将编辑意图完整融入技能文档
-2. 保持原有结构和格式
-3. 确保逻辑严谨，不引入矛盾
-4. 输出完整的 Markdown 技能文档
-
-请输出完整的技能文档。
-"""
+    prompt = open("prompts/rewrite.md", "r").read()
+    prompt = prompt.format(current_skill, edits_text)
     
     result = optimizer_model.infer_with_text(prompt, "", temperature=0.2)
     return result.get("result", current_skill)

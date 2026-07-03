@@ -1,5 +1,5 @@
 from typing import List, Dict, Any
-
+import re
 
 def gen_patch_text(index: int, patch: Dict[str, Any]) -> str:
     """
@@ -14,3 +14,11 @@ def gen_patch_text(index: int, patch: Dict[str, Any]) -> str:
     content = f"内容: {patch.get('content', '')}"
     
     return f"{title}\n{op}\n{patch_type}\n{reason}\n{anchor}\n{target}\n{content}"
+
+
+def extract_result(completion, pattern=r'<result>(.*?)</result>'):
+    match = re.search(pattern, completion, re.DOTALL)
+    if match:
+        return match.group(1).strip()
+    else:
+        return ""

@@ -1,6 +1,9 @@
 import os
 from openai import OpenAI
 from tools.image import image_to_base64
+from tools.logger import setup_logger
+
+logger = setup_logger("skillevolve.chat")
 
 
 class ChatModel:
@@ -33,6 +36,10 @@ class ChatModel:
         
     def infer_with_text(self, text_input, skill_prompt="", temperature=0.7):
         """对文本进行推理"""
+        logger.info(f"[infer_with_text] 输入 text_input: \n{text_input}")
+        logger.info(f"[infer_with_text] 输入 skill_prompt: \n{skill_prompt}")
+        # logger.info(f"[infer_with_text] 输入 temperature: \n{temperature}")
+        
         messages = []
         if skill_prompt:
             messages.append({"role": "system", "content": f"<skill>{skill_prompt}</skill>"})
@@ -43,4 +50,6 @@ class ChatModel:
             temperature=temperature,
             extra_body={"chat_template_kwargs": {"enable_thinking": self.enable_thinking}}
         )
+        logger.info(f"[infer_with_text] 输出 result: \n{response.choices[0].message.content}")
+        
         return {"result": response.choices[0].message.content}

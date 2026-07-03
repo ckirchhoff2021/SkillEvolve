@@ -1,6 +1,9 @@
 import os
 from openai import OpenAI
 from tools.image import image_to_base64
+from tools.logger import setup_logger
+
+logger = setup_logger("skillevolve.responses")
 
 
 class ResponsesModel:
@@ -38,8 +41,13 @@ class ResponsesModel:
         return {"result": f"{response.output[0].summary[0].text}" if self.enable_thinking else response.output_text,
                 "thought": f"{response.output_text}"}
     
+    
     def infer_with_text(self, text_input, skill_prompt="", temperature=0.7):
         """对文本进行推理"""
+        logger.info(f"[infer_with_text] 输入 text_input: \n{text_input}")
+        logger.info(f"[infer_with_text] 输入 skill_prompt: \n{skill_prompt}")
+        # logger.info(f"[infer_with_text] 输入 temperature: \n{temperature}")
+        
         extra = {"thinking": {"type": "enabled"}} if self.enable_thinking else {"thinking": {"type": "disabled"}}
         response = self.client.responses.create(
             model=self.model_name,
@@ -49,5 +57,13 @@ class ResponsesModel:
             reasoning={"effort": "medium"} if self.enable_thinking else None,
             extra_body=extra,
         )
-        return {"result": f"{response.output[0].summary[0].text}" if self.enable_thinking else response.output_text,
-                "thought": f"{response.output_text}"}
+        
+        result = {
+            "result": f"{response.output[0].summary[0].text}" if self.enable_thinking else response.output_text,
+            "thought": f"{response.output_text}"
+        }
+        
+        logger.info(f"[infer_with_text] 输出 result: \n{result['result']}")
+        logger.info(f"[infer_with_text] 输出 thought: \n{result['thought']}")
+        
+        return result

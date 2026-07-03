@@ -11,26 +11,29 @@ from datasets import load_dataset
 class DocVQARollout:
     """DocVQA 数据上的 rollout"""
     
-    def __init__(self, target_model, data_root: str = "/home/chenxiang.101/datas/"):
+    def __init__(self, target_model, dataset_config: dict):
         """
         Args:
             target_model: 目标模型实例（用于推理的冻结模型）
-            data_root: DocVQA 数据根目录
+            dataset_config: 数据集配置
         """
         self.model = target_model
-        self.data_root = data_root
-        self.data_dir = os.path.join(data_root, "DocVQA")
-        
+        self.dataset_config = dataset_config
+        dataset_info = dataset_config["dataset_info"]
+        dataset_path = dataset_info["dataset_path"]
         # 加载验证集（DocVQA 通常用验证集作为训练+验证数据）
-        self.dataset = load_dataset(self.data_dir, "DocVQA")["validation"]
+        self.dataset = load_dataset(dataset_path, "DocVQA")["validation"]
+        
+        train_num = dataset_info["train_sample_num"]
+        val_num = dataset_info["validate_sample_num"]
         
         # 加载索引
-        sample_path =  "datas/docvqa/sample.json"
+        sample_path = dataset_info["sample_path"]
         import json
         with open(sample_path, "r") as f:
             samples = json.load(f)
-        self.train_indices = samples["train"]
-        self.validate_indices = samples["validate"]
+        self.train_indices = samples["train"][:train_num]
+        self.validate_indices = samples["validate"][:val_num]
     
     def _extract_answer(self, text: str) -> str:
         """从模型输出中提取答案"""
@@ -109,3 +112,12 @@ class DocVQARollout:
     def rollout_validate(self, skill_prompt: str) -> list:
         """在验证集上 rollout"""
         return self.rollout_batch(skill_prompt, self.validate_indices)
+    
+    def rollout_step(self, skill_prompt: str, step_idx: int, max_steps: int) -> list:
+        """单step rollout"""
+        indices = self.train_indices
+        batch_size = len(indices) // max_steps
+        start = step_idx * batch_size
+        end = min(start + batch_size, len(indices))
+        return self.rollout_batch(skill_prompt, indices[start:end])
+    

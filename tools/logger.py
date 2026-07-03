@@ -3,13 +3,14 @@ import os
 import logging
 
 
-def setup_logger(name: str, level: int = logging.INFO, log_file: str = None) -> logging.Logger:
+def setup_logger(name: str, level: int = logging.INFO, log_file: str = None, stream: bool = True) -> logging.Logger:
     """创建并配置 logger
     
     Args:
         name: logger 名称
         level: 日志级别
-        log_file: 日志文件路径，若提供则同时写入文件
+        log_file: 日志文件路径，若提供则写入文件
+        stream: 是否输出到终端，默认 True
     """
     logger = logging.getLogger(name)
     if not logger.handlers:
@@ -18,9 +19,10 @@ def setup_logger(name: str, level: int = logging.INFO, log_file: str = None) -> 
         )
         
         # 终端输出
-        sh = logging.StreamHandler()
-        sh.setFormatter(formatter)
-        logger.addHandler(sh)
+        if stream:
+            sh = logging.StreamHandler()
+            sh.setFormatter(formatter)
+            logger.addHandler(sh)
         
         # 文件输出
         if log_file:

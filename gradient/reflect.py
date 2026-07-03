@@ -43,61 +43,15 @@ def reflect_failures(
     meta_text = f"## 优化器记忆\n{meta_skill}" if meta_skill else ""
     
     failure_examples = "\n\n".join([
-        f"""### 失败案例 {i+1}
-问题: {s.get('question', 'N/A')}
-真实答案: {s.get('answer', 'N/A')}
-模型输出: {s.get('prediction', 'N/A')}"""
+        f"""### 失败案例 {i+1} \n问题: {s.get('question', 'N/A')} \n真实答案: {s.get('answer', 'N/A')} \n模型输出: {s.get('prediction', 'N/A')}"""
         for i, s in enumerate(samples)
     ])
     
-    prompt = f"""你是视觉问答技能优化专家。请分析以下失败案例，指出当前技能的不足，并提出具体的编辑建议。
-
-## 当前技能文档
-{current_skill[:3000]}
-
-{buffer_text}
-
-{meta_text}
-
-## 失败案例分析（共{len(failures)}个失败案例，展示前{len(samples)}个）
-{failure_examples}
-
-## 任务要求
-请分析这些失败案例的共同模式，提出针对当前技能的编辑建议。
-
-每个编辑建议必须使用以下格式之一：
-- append: 在文档末尾追加新规则
-- insert_after: 在指定锚点文本后插入新内容
-- replace: 替换指定范围的文本
-- delete: 删除指定范围的文本
-
-请按以下格式输出：
-<patch>
-{chr(10)}<edit op="append">
-{chr(10)}<anchor>N/A</anchor>
-{chr(10)}<content>要追加的内容</content>
-{chr(10)}</edit>
-{chr(10)}<edit op="insert_after">
-{chr(10)}<anchor>锚点文本（需要匹配的原文）</anchor>
-{chr(10)}<content>要插入的内容</content>
-{chr(10)}</edit>
-{chr(10)}<edit op="replace">
-{chr(10)}<target>要替换的原文</target>
-{chr(10)}<content>替换后的内容</content>
-{chr(10)}</edit>
-{chr(10)}<edit op="delete">
-{chr(10)}<target>要删除的原文</target>
-{chr(10)}</edit>
-{chr(10)}<edit_reason>编辑原因说明</edit_reason>
-{chr(10)}</patch>
-
-只输出结构化编辑，不要输出完整文档。每条编辑需要包含 op、anchor/target、content 和 edit_reason。
-最多提出 5 条编辑建议。
-"""
+    prompt = open("prompts/reflect_failure.md", "r").read() 
+    prompt = prompt.format(current_skill, buffer_text, meta_skill, failure_examples)
     
     result = optimizer_model.infer_with_text(prompt, "", temperature=0.3)
     output = result.get("result", "")
-    
     return _parse_patches(output, "failure")
 
 
@@ -117,54 +71,15 @@ def reflect_successes(
     meta_text = f"## 优化器记忆\n{meta_skill}" if meta_skill else ""
     
     success_examples = "\n\n".join([
-        f"""### 成功案例 {i+1}
-问题: {s.get('question', 'N/A')}
-答案: {s.get('answer', 'N/A')}
-模型输出: {s.get('prediction', 'N/A')}"""
+        f"""### 成功案例 {i+1} \n问题: {s.get('question', 'N/A')} \n答案: {s.get('answer', 'N/A')} \n模型输出: {s.get('prediction', 'N/A')}"""
         for i, s in enumerate(samples)
     ])
     
-    prompt = f"""你是视觉问答技能优化专家。以下案例中模型回答正确，请分析成功原因，提取值得固化的规则。
-
-## 当前技能文档
-{current_skill[:3000]}
-
-{meta_text}
-
-## 成功案例分析（共{len(successes)}个成功案例，展示前{len(samples)}个）
-{success_examples}
-
-## 任务要求
-请分析这些成功案例的共同模式，提出将有效规则固化为技能文档的编辑建议。
-
-每个编辑建议必须使用以下格式之一：
-- append: 在文档末尾追加新规则
-- insert_after: 在指定锚点文本后插入新内容
-- replace: 替换指定范围的文本（强化现有规则）
-
-请按以下格式输出：
-<patch>
-{chr(10)}<edit op="append">
-{chr(10)}<anchor>N/A</anchor>
-{chr(10)}<content>要追加的内容</content>
-{chr(10)}</edit>
-{chr(10)}<edit op="insert_after">
-{chr(10)}<anchor>锚点文本</anchor>
-{chr(10)}<content>要插入的内容</content>
-{chr(10)}</edit>
-{chr(10)}<edit op="replace">
-{chr(10)}<target>要替换的原文</target>
-{chr(10)}<content>替换后的内容</content>
-{chr(10)}</edit>
-{chr(10)}<edit_reason>编辑原因说明</edit_reason>
-{chr(10)}</patch>
-
-只输出结构化编辑。最多提出 3 条编辑建议。
-"""
+    prompt = open("prompts/reflect_success.md", "r").read() 
+    prompt = prompt.format(current_skill, meta_skill, success_examples)
     
     result = optimizer_model.infer_with_text(prompt, "", temperature=0.3)
     output = result.get("result", "")
-    
     return _parse_patches(output, "success")
 
 

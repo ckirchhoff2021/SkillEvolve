@@ -4,6 +4,7 @@ Aggregate 模块 - 分层合并
 失败驱动的编辑优先于成功驱动的
 """
 import re
+from tools.common import gen_patch_text
 
 
 def aggregate_patches(
@@ -62,6 +63,7 @@ def _deduplicate_patches(patches: list) -> list:
     return unique
 
 
+
 def _llm_merge_patches(
     optimizer_model,
     current_skill: str,
@@ -69,41 +71,11 @@ def _llm_merge_patches(
 ) -> list:
     """使用 LLM 合并多个 patch"""
     
-    patches_text = "\n\n".join([
-        f"""### Patch {i+1}
-操作: {p.get('op', 'N/A')}
-类型: {p.get('type', 'N/A')}
-原因: {p.get('reason', 'N/A')}
-{f'锚点: {p.get("anchor", "")}' if 'anchor' in p else ''}
-{f'目标: {p.get("target", "")}' if 'target' in p else ''}
-内容: {p.get('content', '')}"""
-        for i, p in enumerate(patches)
-    ])
+    patches_text = "\n\n".join([gen_patch_text(i, p) for i, p in enumerate(patches)])
     
-    prompt = f"""你是视觉问答技能优化专家。以下有多个独立生成的编辑建议，请将它们合并为一个连贯的编辑集合。
+    prompt = open("prompts/apply.md", "r").read()
+    prompt = prompt.format(current_skill, patches_text)
 
-## 当前技能文档
-{current_skill[:3000]}
-
-## 待合并的编辑（共{len(patches)}条）
-{patches_text}
-
-## 任务要求
-1. 合并重复的编辑
-2. 消除冲突的编辑（同一位置的不同编辑，保留更重要的）
-3. 合并后保留的编辑必须使用以下格式：
-<patch>
-{chr(10)}<edit op="append|insert_after|replace|delete">
-{chr(10)}<anchor>锚点文本或 N/A</anchor>
-{chr(10)}<target>要替换/删除的原文（仅replace/delete需要）</target>
-{chr(10)}<content>编辑内容（仅append/insert_after/replace需要）</content>
-{chr(10)}</edit>
-{chr(10)}<edit op="...">...</edit>
-{chr(10)}</patch>
-
-只输出 <patch> 块，不要输出其他内容。
-"""
-    
     result = optimizer_model.infer_with_text(prompt, "", temperature=0.2)
     output = result.get("result", "")
     
