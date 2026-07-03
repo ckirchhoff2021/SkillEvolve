@@ -43,8 +43,7 @@ datas/**/*.png
 datas/**/*.jpeg
 datas/**/*.gif
 datas/**/*.pdf
-outputs/*
-!outputs/.gitkeep
+outputs/
 
 # IDE
 .vscode/
