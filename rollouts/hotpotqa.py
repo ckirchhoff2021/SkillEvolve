@@ -103,8 +103,14 @@ class HotpotQARollout(object):
         """
         
         results = []
+        n_retrv = n_valid_retrv = 0
         for i, idx in enumerate(indices):
-            data = self.get_item(idx, split="train" if train else "validate")
+            try:
+                data = self.get_item(idx, split="train" if train else "validate")
+            except Exception as e:
+                print(f"[Rollout] Error on idx {idx}: {e}")
+                continue
+            
             question = data["question"]
             answer = data['answer']    
             
@@ -133,6 +139,11 @@ class HotpotQARollout(object):
                     idx = retrieved[0]['doc_idx']  
                     docs.pop(idx)               
                     contexts += f"\nstep {step}: \nQuery: {query} \nRetrieved: \n{doc}\n"
+                
+                    title = doc.split(':')[0]
+                    n_retrv += 1
+                    if title in data['supporting_facts']['titles']:
+                        n_valid_retrv += 1
             
                 else:
                     preds = '<error>'
@@ -161,6 +172,7 @@ class HotpotQARollout(object):
             
         scores = [item['score'] for item in results]
         print(f'Accuracy: {np.mean(scores)}')
+        print(f'Retrieved Accuracy hit@1: {n_valid_retrv/n_retrv:.4f}')
         
         return results
 
@@ -179,5 +191,3 @@ class HotpotQARollout(object):
         start = step_idx * batch_size
         end = min(start + batch_size, len(indices))
         return self.rollout_batch(skill_prompt, indices[start:end])
-
-
