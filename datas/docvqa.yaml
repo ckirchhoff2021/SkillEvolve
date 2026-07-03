@@ -1,0 +1,8 @@
+dataset_info:
+  name: DocVQA
+  init_skill: datas/docvqa/init_skill.md
+  dataset_path: /home/chenxiang.101/datas/DocVQA
+  sample_path: datas/docvqa/sample.json
+  train_sample_num: 30
+  validate_sample_num: 10
+ 

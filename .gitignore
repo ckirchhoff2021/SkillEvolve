@@ -30,13 +30,21 @@ wheels/
 .env.local
 .env.*.local
 
-# Data
-datas/*
-!datas/.gitkeep
+# Data - 上传配置/样例/初始技能，排除大体积数据集二进制/媒体文件
+!datas/
+datas/**/*.bin
+datas/**/*.pt
+datas/**/*.pth
+datas/**/*.tar
+datas/**/*.zip
+datas/**/*.parquet
+datas/**/*.jpg
+datas/**/*.png
+datas/**/*.jpeg
+datas/**/*.gif
+datas/**/*.pdf
 outputs/*
 !outputs/.gitkeep
-assets/*
-!assets/.gitkeep
 
 # IDE
 .vscode/

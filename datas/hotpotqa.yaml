@@ -1,0 +1,9 @@
+dataset_info:
+  name: HotpotQA
+  init_skill: datas/hotpotqa/init_skill.md
+  dataset_path: /home/chenxiang.101/workspace/datas/hotpot_qa
+  sub_dir: distractor
+  huggingface_url: https://huggingface.co/datasets/hotpotqa/hotpot_qa
+  train_sample_num: 300
+  validate_sample_num: 100
+ 
